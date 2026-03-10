@@ -198,7 +198,7 @@ class _DonorProfileScreenState extends ConsumerState<DonorProfileScreen> {
                     ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    initialValue: _bloodController.text.isEmpty
+                    value: _bloodController.text.isEmpty
                         ? null
                         : _bloodController.text,
                     decoration: const InputDecoration(labelText: 'Blood Group'),

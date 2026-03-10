@@ -194,7 +194,7 @@ class _EmergencyRequestsScreenState
                     const SizedBox(height: 10),
                     if (_type == 'BLOOD')
                       DropdownButtonFormField<String>(
-                        initialValue: _bloodController.text,
+                        value: _bloodController.text.isEmpty ? null : _bloodController.text,
                         decoration:
                             const InputDecoration(labelText: 'Blood Group'),
                         items: _bloodGroups
@@ -206,7 +206,7 @@ class _EmergencyRequestsScreenState
                       )
                     else
                       DropdownButtonFormField<String>(
-                        initialValue: _organController.text,
+                        value: _organController.text.isEmpty ? null : _organController.text,
                         decoration:
                             const InputDecoration(labelText: 'Organ Type'),
                         items: _organTypes

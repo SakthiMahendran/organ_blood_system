@@ -319,7 +319,7 @@ class _HospitalRegisterScreenState
                               ),
                             ),
                             DropdownButtonFormField<String>(
-                              initialValue: _institutionType,
+                              value: _institutionType,
                               decoration: const InputDecoration(
                                   labelText: 'Institution Type'),
                               items: _institutionTypes

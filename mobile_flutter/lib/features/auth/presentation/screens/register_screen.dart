@@ -212,7 +212,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<UserRole>(
-                            initialValue: _selectedRole,
+                            value: _selectedRole,
                             decoration:
                                 const InputDecoration(labelText: 'Role'),
                             items: const [

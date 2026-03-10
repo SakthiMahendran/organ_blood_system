@@ -48,6 +48,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (!auth.isAuthenticated) {
+        if (location == RoutePaths.splash) return RoutePaths.login;
         return isPublic ? null : RoutePaths.login;
       }
 

@@ -92,7 +92,7 @@ class _AdminHospitalsScreenState extends ConsumerState<AdminHospitalsScreen> {
                           'Created: ${AppFormatters.dateTime(hospital.createdAt)}'),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        initialValue: hospital.approvalStatus,
+                        value: hospital.approvalStatus,
                         decoration:
                             const InputDecoration(labelText: 'Approval Status'),
                         items: _statuses

@@ -7,26 +7,16 @@ class AppConfig {
   static const String _apiBaseUrlFromEnv =
       String.fromEnvironment('API_BASE_URL', defaultValue: '');
 
+  static const String _productionApiUrl =
+      'https://mrtechie-organ-blood-backend.hf.space/api';
+
   static String get apiBaseUrl {
     final configured = _normalizeBaseUrl(_apiBaseUrlFromEnv);
     if (configured.isNotEmpty) {
       return configured;
     }
 
-    if (kIsWeb) {
-      return 'http://localhost:8000/api';
-    }
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'http://10.0.2.2:8000/api';
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-      case TargetPlatform.windows:
-      case TargetPlatform.linux:
-      case TargetPlatform.fuchsia:
-        return 'http://127.0.0.1:8000/api';
-    }
+    return _productionApiUrl;
   }
 
   static String _normalizeBaseUrl(String value) {

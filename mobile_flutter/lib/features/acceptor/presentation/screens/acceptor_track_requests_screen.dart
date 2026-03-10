@@ -71,7 +71,7 @@ class _AcceptorTrackRequestsScreenState
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                initialValue: urgencyController.text,
+                value: urgencyController.text.isEmpty ? null : urgencyController.text,
                 decoration: const InputDecoration(labelText: 'Urgency'),
                 items: const ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'EMERGENCY']
                     .map((item) =>

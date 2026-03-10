@@ -142,7 +142,7 @@ class _AiMatchingScreenState extends ConsumerState<AiMatchingScreen> {
                   const SizedBox(height: 10),
                   if (_type == 'blood')
                     DropdownButtonFormField<String>(
-                      initialValue: _bloodController.text.isEmpty
+                      value: _bloodController.text.isEmpty
                           ? null
                           : _bloodController.text,
                       decoration:
@@ -155,7 +155,7 @@ class _AiMatchingScreenState extends ConsumerState<AiMatchingScreen> {
                     )
                   else
                     DropdownButtonFormField<String>(
-                      initialValue: _organController.text.isEmpty
+                      value: _organController.text.isEmpty
                           ? null
                           : _organController.text,
                       decoration:
@@ -168,7 +168,7 @@ class _AiMatchingScreenState extends ConsumerState<AiMatchingScreen> {
                     ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    initialValue: _urgency,
+                    value: _urgency,
                     decoration: const InputDecoration(labelText: 'Urgency'),
                     items: const ['ALL', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
                         .map((item) =>

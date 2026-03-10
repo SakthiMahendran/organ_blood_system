@@ -161,7 +161,7 @@ class _AcceptorCreateRequestScreenState
             const SizedBox(height: 12),
             if (_isBlood) ...[
               DropdownButtonFormField<String>(
-                initialValue: _bloodGroupController.text.isEmpty
+                value: _bloodGroupController.text.isEmpty
                     ? null
                     : _bloodGroupController.text,
                 decoration: const InputDecoration(labelText: 'Blood Group'),
@@ -189,7 +189,7 @@ class _AcceptorCreateRequestScreenState
               ),
             ] else ...[
               DropdownButtonFormField<String>(
-                initialValue: _organTypeController.text.isEmpty
+                value: _organTypeController.text.isEmpty
                     ? null
                     : _organTypeController.text,
                 decoration: const InputDecoration(labelText: 'Organ Type'),
@@ -203,7 +203,7 @@ class _AcceptorCreateRequestScreenState
             ],
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              initialValue: _urgencyController.text,
+              value: _urgencyController.text.isEmpty ? null : _urgencyController.text,
               decoration: const InputDecoration(labelText: 'Urgency'),
               items: _urgencies
                   .map((u) => DropdownMenuItem(value: u, child: Text(u)))
