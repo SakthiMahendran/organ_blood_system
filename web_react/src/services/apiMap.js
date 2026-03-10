@@ -12,6 +12,9 @@ export const API_MAP = {
     availability: '/donors/availability',
     matches: '/donors/matches',
     respondToMatch: (matchId) => `/donors/matches/${matchId}/respond`,
+    eligibilityCheck: '/donors/eligibility-check',
+    cooldownStatus: '/donors/cooldown-status',
+    milestones: '/donors/milestones',
   },
   requests: {
     createBlood: '/requests/blood',
@@ -19,6 +22,9 @@ export const API_MAP = {
     createEmergency: '/requests/emergency',
     myRequests: '/requests/my',
     detail: (requestId) => `/requests/${requestId}`,
+    sosBroadcast: (requestId) => `/requests/${requestId}/sos-broadcast`,
+    sosRespond: (requestId) => `/requests/${requestId}/sos-respond`,
+    sosTracker: (requestId) => `/requests/${requestId}/sos-tracker`,
   },
   matching: {
     run: '/matching/run',
@@ -55,6 +61,13 @@ export const API_MAP = {
     detail: (donationId) => `/donations/${donationId}`,
     all: '/donations/all',
     updateStatus: (donationId) => `/donations/${donationId}/status`,
+    bloodUnits: '/donations/blood-units/',
+    expiryAlerts: '/donations/blood-units/expiry-alerts/',
+    fifoSuggestion: '/donations/blood-units/fifo-suggestion/',
+    wastageStats: '/donations/blood-units/wastage-stats/',
+    redistributionSuggestions: '/donations/redistribution/suggestions/',
+    redistributionGenerate: '/donations/redistribution/generate/',
+    redistributionUpdate: (id) => `/donations/redistribution/suggestions/${id}/`,
   },
   recipients: {
     profile: '/recipients/profile',
@@ -63,6 +76,5 @@ export const API_MAP = {
   ai: {
     chatbotQuestions: '/ai/chatbot/questions',
     chatbotAsk: '/ai/chatbot/ask',
-    bloodGroupDetect: '/ai/blood-group/detect',
   },
 };

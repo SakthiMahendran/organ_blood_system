@@ -118,3 +118,62 @@ def respond_to_match(request, match_id):
         metadata={"response": response_value},
     )
     return Response({"success": True, "data": MatchSerializer(match).data}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def eligibility_check(request):
+    from .eligibility import check_eligibility
+
+    result = check_eligibility(request.data)
+    return Response({"success": True, "data": result})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsDonor])
+def cooldown_status(request):
+    profile = DonorProfile.objects.filter(user=request.user).first()
+    if not profile:
+        return Response({"success": False, "error": {"code": "NOT_FOUND", "message": "Donor profile not found"}}, status=404)
+
+    eligible_date = profile.next_eligible_date
+    return Response({
+        "success": True,
+        "data": {
+            "last_donation_date": profile.last_blood_donation_date,
+            "last_donation_type": profile.last_donation_type,
+            "next_eligible_date": eligible_date.isoformat() if eligible_date else None,
+            "cooldown_remaining_days": profile.cooldown_remaining_days,
+            "is_eligible": profile.is_cooldown_passed,
+            "total_donations": profile.total_donations,
+            "milestone_badge": profile.milestone_badge,
+            "donation_streak": profile.donation_streak,
+            "next_milestone": profile.next_milestone,
+        },
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsDonor])
+def donor_milestones(request):
+    profile = DonorProfile.objects.filter(user=request.user).first()
+    if not profile:
+        return Response({"success": False, "error": {"code": "NOT_FOUND", "message": "Donor profile not found"}}, status=404)
+
+    from notifications_app.models import Notification
+    impact_messages = list(
+        Notification.objects.filter(
+            user=request.user, type=Notification.TYPE_IMPACT
+        ).order_by("-created_at").values("title", "message", "created_at")[:5]
+    )
+
+    return Response({
+        "success": True,
+        "data": {
+            "total_donations": profile.total_donations,
+            "milestone_badge": profile.milestone_badge,
+            "donation_streak": profile.donation_streak,
+            "next_milestone": profile.next_milestone,
+            "impact_messages": impact_messages,
+        },
+    })

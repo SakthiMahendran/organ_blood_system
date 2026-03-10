@@ -78,3 +78,13 @@ Desktop.ini
 tmp/
 temp/
 coverage/
+
+# ========================
+# Deploy / Build artifacts
+# ========================
+backend_django/staticfiles/
+web_react/screenshots/
+package.json
+package-lock.json
+node_modules/
+.env.deploy

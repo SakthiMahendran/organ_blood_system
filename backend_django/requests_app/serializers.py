@@ -22,10 +22,13 @@ class RequestSerializer(serializers.ModelSerializer):
             "hospital",
             "status",
             "notes",
+            "priority_score",
+            "original_urgency",
+            "escalated_at",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_by", "status", "created_at", "updated_at")
+        read_only_fields = ("id", "created_by", "status", "priority_score", "original_urgency", "escalated_at", "created_at", "updated_at")
 
     def validate(self, attrs):
         request_type = attrs.get("request_type", getattr(self.instance, "request_type", None))
@@ -38,6 +41,8 @@ class RequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"blood_group": "blood_group is required for blood requests."})
             if not units_needed:
                 raise serializers.ValidationError({"units_needed": "units_needed is required for blood requests."})
+            if units_needed and units_needed > 9999:
+                raise serializers.ValidationError({"units_needed": "units_needed cannot exceed 9999."})
         elif request_type == Request.ORGAN:
             if not organ_type:
                 raise serializers.ValidationError({"organ_type": "organ_type is required for organ requests."})

@@ -1,7 +1,9 @@
-import { yupResolver } from '@hookform/resolvers/yup';
+import LocalHospitalRoundedIcon from '@mui/icons-material/LocalHospitalRounded';
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -17,6 +19,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import Grid2 from '@mui/material/Grid2';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -174,21 +177,46 @@ const HospitalRegisterPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        py: { xs: 5, md: 8 },
+        display: 'flex',
+        justifyContent: 'center',
+        px: 2,
+        py: { xs: 4, md: 6 },
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      <Box
+        sx={{
+          position: 'absolute', width: 400, height: 400, borderRadius: '50%',
+          background: (theme) => `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.08)}, transparent 70%)`,
+          top: '-8%', right: '-6%', pointerEvents: 'none',
+        }}
+      />
       <Container maxWidth="md">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+        <Stack alignItems="center" spacing={3} sx={{ mb: 3 }}>
+          <Box
+            sx={(theme) => ({
+              width: 56, height: 56, borderRadius: 3,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            })}
+          >
+            <LocalHospitalRoundedIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+          </Box>
+          <Stack alignItems="center" spacing={0.5}>
+            <Typography variant="h4" sx={{ fontWeight: 800 }}>Hospital Registration</Typography>
+            <Typography variant="body2" color="text.secondary">Submit your institution profile for admin verification</Typography>
+          </Stack>
+        </Stack>
         <Card>
           <CardContent sx={{ p: { xs: 3, md: 4 } }}>
             <Stack spacing={3} component="form" onSubmit={onSubmit}>
-              <Stack spacing={0.75}>
-                <Typography variant="h4">Hospital / Blood Bank Registration</Typography>
-                <Typography color="text.secondary">
-                  Submit your institution profile for admin verification.
-                </Typography>
-              </Stack>
-
-              <Divider />
               <Typography variant="h6">Institution Details</Typography>
               <Grid2 container spacing={2}>
                 <Grid2 size={{ xs: 12, md: 6 }}>
@@ -384,15 +412,16 @@ const HospitalRegisterPage = () => {
                 {isSubmitting ? <CircularProgress size={22} color="inherit" /> : 'Submit for Verification'}
               </Button>
 
-              <Typography variant="body2">
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
                 Already have a hospital account?{' '}
-                <Typography component={RouterLink} to={PATHS.LOGIN} sx={{ color: 'primary.main', fontWeight: 700 }}>
+                <Typography component={RouterLink} to={PATHS.LOGIN} sx={{ color: 'primary.main', fontWeight: 700, '&:hover': { textDecoration: 'underline' } }}>
                   Back to login
                 </Typography>
               </Typography>
             </Stack>
           </CardContent>
         </Card>
+        </motion.div>
       </Container>
     </Box>
   );

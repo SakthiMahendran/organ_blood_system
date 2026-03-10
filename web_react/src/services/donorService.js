@@ -31,4 +31,19 @@ export const donorService = {
     });
     return unwrapData(response);
   },
+
+  async checkEligibility(data) {
+    const response = await apiClient.post(API_MAP.donor.eligibilityCheck, data);
+    return unwrapData(response);
+  },
+
+  async getCooldownStatus() {
+    const response = await apiClient.get(API_MAP.donor.cooldownStatus);
+    return unwrapData(response);
+  },
+
+  async getMilestones() {
+    const response = await apiClient.get(API_MAP.donor.milestones);
+    return unwrapData(response);
+  },
 };

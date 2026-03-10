@@ -17,5 +17,4 @@ urlpatterns = [
     path('api/admin/', include('audit_app.urls')),
     path('api/ai/chatbot/questions', ai_views.chatbot_questions, name='ai-chatbot-questions'),
     path('api/ai/chatbot/ask', ai_views.chatbot_ask, name='ai-chatbot-ask'),
-    path('api/ai/blood-group/detect', ai_views.blood_group_detect, name='ai-blood-detect'),
 ]

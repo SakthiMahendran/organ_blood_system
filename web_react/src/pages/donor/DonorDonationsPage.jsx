@@ -1,5 +1,6 @@
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import VolunteerActivismRoundedIcon from '@mui/icons-material/VolunteerActivismRounded';
 import {
   Button,
   Card,
@@ -138,7 +139,13 @@ const DonorDonationsPage = () => {
           {isLoading ? (
             <ListSkeleton rows={5} />
           ) : donations.length === 0 ? (
-            <EmptyState title="No donations yet" description="Record your first donation to get started." />
+            <EmptyState
+              icon={VolunteerActivismRoundedIcon}
+              title="No donations yet"
+              description="Your donation history will appear here. Click 'Record Donation' to add your first one."
+              actionLabel="Record Donation"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table>
               <TableHead>

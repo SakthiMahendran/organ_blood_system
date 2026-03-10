@@ -91,7 +91,7 @@ def emergency_requests(request):
     role = getattr(request.user, "user_type", "")
 
     if request.method == "GET":
-        qs = Request.objects.filter(urgency=Request.CRITICAL).exclude(status=Request.CANCELLED).order_by("-updated_at")
+        qs = Request.objects.filter(urgency=Request.CRITICAL).exclude(status=Request.CANCELLED).order_by("-priority_score", "-updated_at")
 
         if role == "ACCEPTOR":
             qs = qs.filter(created_by=request.user)
@@ -149,7 +149,7 @@ def emergency_requests(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsAcceptorUser])
 def my_requests(request):
-    qs = Request.objects.filter(created_by=request.user).order_by("-created_at")
+    qs = Request.objects.filter(created_by=request.user).order_by("-priority_score", "-created_at")
     return _ok(RequestSerializer(qs[:300], many=True).data)
 
 
@@ -228,3 +228,59 @@ def request_detail(request, request_id):
     )
 
     return _ok(RequestSerializer(req).data)
+
+
+# ---------- SOS Endpoints ----------
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def sos_broadcast(request, request_id):
+    """Hospital triggers SOS broadcast for a CRITICAL request."""
+    role = getattr(request.user, "user_type", "")
+    if role not in {"HOSPITAL", "ADMIN"}:
+        return _error("Only hospitals/admins can broadcast SOS", code="FORBIDDEN", status_code=status.HTTP_403_FORBIDDEN)
+
+    req = Request.objects.filter(id=request_id).first()
+    if not req:
+        return _error("Request not found", code="NOT_FOUND", status_code=status.HTTP_404_NOT_FOUND)
+
+    if req.urgency != Request.CRITICAL:
+        return _error("SOS can only be sent for CRITICAL requests", code="BAD_REQUEST")
+
+    from .sos_service import broadcast_sos
+    result = broadcast_sos(req)
+
+    audit_log(
+        actor=request.user,
+        action="SOS_BROADCAST_SENT",
+        entity_type="Request",
+        entity_id=req.id,
+        metadata={"donors_notified": result["donors_notified"]},
+    )
+
+    return _ok(result)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def sos_respond(request, request_id):
+    """Donor responds to an SOS alert."""
+    response_value = request.data.get("response")
+    if response_value not in {"coming", "cannot_make_it"}:
+        return _error("response must be 'coming' or 'cannot_make_it'")
+
+    from .sos_service import respond_to_sos
+    result = respond_to_sos(request.user, request_id, response_value)
+    if not result:
+        return _error("No SOS notification found for this request", code="NOT_FOUND", status_code=status.HTTP_404_NOT_FOUND)
+
+    return _ok({"status": "response recorded", "response": response_value})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def sos_tracker(request, request_id):
+    """Get SOS response tracker for a request."""
+    from .sos_service import get_sos_tracker
+    data = get_sos_tracker(request_id)
+    return _ok(data)

@@ -1,3 +1,4 @@
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import {
   Button,
   Card,
@@ -11,6 +12,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+
+import UrgencyChip from '../../components/common/UrgencyChip';
 import { useEffect, useState } from 'react';
 
 import EmptyState from '../../components/common/EmptyState';
@@ -68,6 +71,7 @@ const DonorMatchesPage = () => {
             <ListSkeleton rows={6} />
           ) : matches.length === 0 ? (
             <EmptyState
+              icon={FavoriteRoundedIcon}
               title="No matches found"
               description="Your matching results will appear here when hospitals run the matching process."
             />
@@ -75,7 +79,10 @@ const DonorMatchesPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Request ID</TableCell>
+                  <TableCell>Request</TableCell>
+                  <TableCell>Need</TableCell>
+                  <TableCell>Urgency</TableCell>
+                  <TableCell>Hospital</TableCell>
                   <TableCell>Score</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Matched At</TableCell>
@@ -83,9 +90,19 @@ const DonorMatchesPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {matches.map((item) => (
+                {matches.map((item) => {
+                  const req = item.request_details;
+                  const need = req
+                    ? req.request_type === 'BLOOD'
+                      ? req.blood_group || 'Blood'
+                      : req.organ_type || 'Organ'
+                    : '-';
+                  return (
                   <TableRow key={item.id}>
                     <TableCell>#{item.request}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{need}</TableCell>
+                    <TableCell>{req?.urgency ? <UrgencyChip urgency={req.urgency} size="small" /> : '-'}</TableCell>
+                    <TableCell>{req?.hospital_name || '-'}</TableCell>
                     <TableCell>{Math.round(item.match_score)}</TableCell>
                     <TableCell>
                       <Chip
@@ -105,12 +122,17 @@ const DonorMatchesPage = () => {
                             Decline
                           </Button>
                         </Stack>
+                      ) : item.donor_response === 'ACCEPTED' ? (
+                        <Typography variant="caption" color="success.main" sx={{ fontWeight: 600 }}>
+                          Contact hospital
+                        </Typography>
                       ) : (
-                        '-'
+                        <Typography variant="caption" color="text.disabled">Declined</Typography>
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           )}

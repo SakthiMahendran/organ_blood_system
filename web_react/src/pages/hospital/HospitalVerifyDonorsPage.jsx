@@ -1,3 +1,4 @@
+import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded';
 import {
   Button,
   Card,
@@ -66,7 +67,11 @@ const HospitalVerifyDonorsPage = () => {
           {isLoading ? (
             <ListSkeleton rows={6} />
           ) : donors.length === 0 ? (
-            <EmptyState title="No pending verifications" description="All donor verifications are up to date." />
+            <EmptyState
+              icon={HowToRegRoundedIcon}
+              title="No pending verifications"
+              description="Donors awaiting identity and eligibility verification will appear here."
+            />
           ) : (
             <Table>
               <TableHead>

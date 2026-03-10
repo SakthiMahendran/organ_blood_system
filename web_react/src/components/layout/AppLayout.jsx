@@ -1,12 +1,15 @@
 import { Box, Toolbar } from '@mui/material';
+import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
+import PageTransition from '../common/PageTransition';
 import SideMenu, { drawerWidth } from './SideMenu';
 import TopBar from './TopBar';
 
 const AppLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -25,7 +28,11 @@ const AppLayout = () => {
       >
         <Toolbar />
         <Box sx={{ minHeight: 'calc(100vh - 112px)' }}>
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </Box>
       </Box>
     </Box>

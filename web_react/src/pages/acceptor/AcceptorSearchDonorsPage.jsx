@@ -1,3 +1,5 @@
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
+import PersonSearchRoundedIcon from '@mui/icons-material/PersonSearchRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import {
@@ -32,6 +34,7 @@ const AcceptorSearchDonorsPage = () => {
   const { showToast } = useToast();
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [useAiRanking, setUseAiRanking] = useState(true);
 
   const { control, handleSubmit, watch } = useForm({
@@ -49,6 +52,7 @@ const AcceptorSearchDonorsPage = () => {
 
   const onSearch = handleSubmit(async (values) => {
     setIsLoading(true);
+    setHasSearched(true);
     try {
       const params = {
         type: values.type,
@@ -156,10 +160,17 @@ const AcceptorSearchDonorsPage = () => {
 
           {isLoading ? (
             <ListSkeleton rows={6} />
+          ) : !hasSearched ? (
+            <EmptyState
+              icon={ManageSearchRoundedIcon}
+              title="Ready to search"
+              description="Enter your filters above and click Search to find compatible donors."
+            />
           ) : results.length === 0 ? (
             <EmptyState
+              icon={PersonSearchRoundedIcon}
               title="No donors found"
-              description="Try changing filters like city, state, blood group, or organ type."
+              description="Try adjusting your filters — different city, state, blood group, or organ type."
             />
           ) : (
             <Table>

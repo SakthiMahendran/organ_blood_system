@@ -23,6 +23,8 @@ class User(AbstractUser):
     state = models.CharField(max_length=80, blank=True, null=True)
     blood_group = models.CharField(max_length=5, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

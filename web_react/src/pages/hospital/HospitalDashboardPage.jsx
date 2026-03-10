@@ -1,3 +1,7 @@
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import HourglassBottomRoundedIcon from '@mui/icons-material/HourglassBottomRounded';
+import LocalHospitalRoundedIcon from '@mui/icons-material/LocalHospitalRounded';
+import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 import { Card, CardContent, Stack, Typography } from '@mui/material';
 import Grid2 from '@mui/material/Grid2';
 import { useEffect, useMemo, useState } from 'react';
@@ -52,20 +56,25 @@ const HospitalDashboardPage = () => {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">Hospital Dashboard</Typography>
+      <Stack spacing={0.5}>
+        <Typography variant="h4">Hospital Dashboard</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Manage requests, donor verifications, and hospital operations.
+        </Typography>
+      </Stack>
 
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Hospital Requests" value={requests.length} />
+          <StatCard title="Hospital Requests" value={requests.length} icon={LocalHospitalRoundedIcon} color="primary" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Pending Verifications" value={pendingVerifications.length} />
+          <StatCard title="Pending Verifications" value={pendingVerifications.length} icon={HourglassBottomRoundedIcon} color="warning" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Approved Requests" value={approvedRequests} />
+          <StatCard title="Approved Requests" value={approvedRequests} icon={CheckCircleRoundedIcon} color="success" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Fulfilled Requests" value={fulfilledRequests} />
+          <StatCard title="Fulfilled Requests" value={fulfilledRequests} icon={TaskAltRoundedIcon} color="info" />
         </Grid2>
       </Grid2>
 

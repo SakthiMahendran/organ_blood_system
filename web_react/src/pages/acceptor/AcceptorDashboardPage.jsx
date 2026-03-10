@@ -1,3 +1,6 @@
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
+import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 import {
   Card,
   CardContent,
@@ -59,17 +62,22 @@ const AcceptorDashboardPage = () => {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">Acceptor Dashboard</Typography>
+      <Stack spacing={0.5}>
+        <Typography variant="h4">Recipient Dashboard</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Track your blood and organ requests and view matched donors.
+        </Typography>
+      </Stack>
 
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, sm: 4 }}>
-          <StatCard title="Total Requests" value={requests.length} />
+          <StatCard title="Total Requests" value={requests.length} icon={AssignmentRoundedIcon} color="primary" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 4 }}>
-          <StatCard title="Active Requests" value={activeRequests} />
+          <StatCard title="Active Requests" value={activeRequests} icon={HourglassTopRoundedIcon} color="warning" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 4 }}>
-          <StatCard title="Fulfilled" value={fulfilledRequests} />
+          <StatCard title="Fulfilled" value={fulfilledRequests} icon={TaskAltRoundedIcon} color="success" />
         </Grid2>
       </Grid2>
 

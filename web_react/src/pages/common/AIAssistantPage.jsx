@@ -1,29 +1,57 @@
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
+import HealthAndSafetyRoundedIcon from '@mui/icons-material/HealthAndSafetyRounded';
 import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
-import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
+import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 import {
   Alert,
+  alpha,
+  Avatar,
   Box,
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   Divider,
+  FormControlLabel,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import { useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { aiService } from '../../services/aiService';
+import { donorService } from '../../services/donorService';
 import { getErrorMessage } from '../../utils/errorUtils';
+import { normalizeRole } from '../../utils/roleUtils';
+
+const ROLE_PROMPTS = {
+  DONOR: ['Am I eligible to donate?', 'What is the cooldown after donating?', 'How does organ donation work?'],
+  ACCEPTOR: ['How do I create a request?', 'What blood types are compatible?', 'How long does matching take?'],
+  HOSPITAL: ['How do I approve a request?', 'What is priority scoring?', 'How does SOS broadcast work?'],
+  ADMIN: ['Show redistribution thresholds', 'How is priority score calculated?', 'What are expiry alert levels?'],
+};
+
+const DONATION_TYPES = [
+  { value: 'whole_blood', label: 'Whole Blood (56 days)' },
+  { value: 'power_red', label: 'Power Red (112 days)' },
+  { value: 'platelets', label: 'Platelets (7 days)' },
+  { value: 'plasma', label: 'Plasma (28 days)' },
+];
 
 const AIAssistantPage = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const role = normalizeRole(user?.user_type);
+  const showEligibilityChecker = role === 'DONOR' || role === 'ACCEPTOR';
 
+  // Chatbot state
   const [message, setMessage] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([
@@ -33,12 +61,21 @@ const AIAssistantPage = () => {
     },
   ]);
   const [quickQuestions, setQuickQuestions] = useState([]);
-
-  const [source, setSource] = useState('camera-upload');
-  const [detectFile, setDetectFile] = useState(null);
-  const [detectLoading, setDetectLoading] = useState(false);
-  const [detectResult, setDetectResult] = useState(null);
   const chatContainerRef = useRef(null);
+
+  // Eligibility checker state
+  const [eligibilityForm, setEligibilityForm] = useState({
+    age: '',
+    weight_kg: '',
+    last_donation_date: '',
+    last_donation_type: 'whole_blood',
+    recent_tattoo: false,
+    recent_travel: false,
+    is_pregnant: false,
+    recent_medications: false,
+  });
+  const [eligibilityLoading, setEligibilityLoading] = useState(false);
+  const [eligibilityResult, setEligibilityResult] = useState(null);
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -49,17 +86,12 @@ const AIAssistantPage = () => {
         setQuickQuestions([]);
       }
     };
-
     loadQuestions();
   }, []);
 
   useEffect(() => {
     const chatElement = chatContainerRef.current;
-    if (!chatElement) {
-      return;
-    }
-
-    // Scroll only inside chat container; avoid moving the whole page.
+    if (!chatElement) return;
     chatElement.scrollTop = chatElement.scrollHeight;
   }, [chatHistory, chatLoading]);
 
@@ -93,32 +125,200 @@ const AIAssistantPage = () => {
     }
   };
 
-  const detectBloodGroup = async () => {
-    setDetectLoading(true);
+  const handleEligibilityChange = (field, value) => {
+    setEligibilityForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const checkEligibility = async () => {
+    setEligibilityLoading(true);
+    setEligibilityResult(null);
     try {
-      const data = await aiService.detectBloodGroup({
-        source: source || 'sample',
-        imageFile: detectFile,
-      });
-      setDetectResult(data || null);
+      const data = await donorService.checkEligibility(eligibilityForm);
+      setEligibilityResult(data);
     } catch (apiError) {
-      showToast(getErrorMessage(apiError, 'Blood group detection failed.'), 'error');
+      showToast(getErrorMessage(apiError, 'Eligibility check failed.'), 'error');
     } finally {
-      setDetectLoading(false);
+      setEligibilityLoading(false);
     }
   };
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <AutoAwesomeRoundedIcon color="primary" />
-        <Typography variant="h4">AI Assistant</Typography>
+      <Stack spacing={0.5}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <AutoAwesomeRoundedIcon color="primary" />
+          <Typography variant="h4">AI Assistant</Typography>
+        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          {role === 'DONOR' || role === 'ACCEPTOR'
+            ? 'Check your donation eligibility or ask medical questions about blood & organ donation.'
+            : 'Ask questions about platform workflows, matching, or clinical guidelines.'}
+        </Typography>
       </Stack>
 
-      <Alert severity="info">
-        AI outputs are assistive and prototype-level. Final medical decisions must be validated by certified clinicians.
+      <Alert severity="info" sx={{ fontSize: '0.82rem' }}>
+        AI outputs are assistive and prototype-level. Final decisions must be validated by certified clinicians.
       </Alert>
 
+      {/* ─── Eligibility Checker (donor/acceptor only) ─── */}
+      {showEligibilityChecker && <Card>
+        <CardContent>
+          <Stack spacing={2.5}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <HealthAndSafetyRoundedIcon color="secondary" />
+              <Typography variant="h6">Donor Eligibility Checker</Typography>
+            </Stack>
+
+            <Typography variant="body2" color="text.secondary">
+              Answer a few questions to check if you are eligible to donate blood today. Based on Red Cross guidelines.
+            </Typography>
+
+            <Grid2 container spacing={2}>
+              <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Age"
+                  type="number"
+                  value={eligibilityForm.age}
+                  onChange={(e) => handleEligibilityChange('age', e.target.value)}
+                  fullWidth
+                  size="small"
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Weight (kg)"
+                  type="number"
+                  value={eligibilityForm.weight_kg}
+                  onChange={(e) => handleEligibilityChange('weight_kg', e.target.value)}
+                  fullWidth
+                  size="small"
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Last Donation Date"
+                  type="date"
+                  value={eligibilityForm.last_donation_date}
+                  onChange={(e) => handleEligibilityChange('last_donation_date', e.target.value)}
+                  fullWidth
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  select
+                  label="Donation Type"
+                  value={eligibilityForm.last_donation_type}
+                  onChange={(e) => handleEligibilityChange('last_donation_type', e.target.value)}
+                  fullWidth
+                  size="small"
+                  SelectProps={{ native: true }}
+                >
+                  {DONATION_TYPES.map((dt) => (
+                    <option key={dt.value} value={dt.value}>
+                      {dt.label}
+                    </option>
+                  ))}
+                </TextField>
+              </Grid2>
+            </Grid2>
+
+            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={eligibilityForm.recent_tattoo}
+                    onChange={(e) => handleEligibilityChange('recent_tattoo', e.target.checked)}
+                    size="small"
+                  />
+                }
+                label="Recent tattoo/piercing (< 3 months)"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={eligibilityForm.recent_travel}
+                    onChange={(e) => handleEligibilityChange('recent_travel', e.target.checked)}
+                    size="small"
+                  />
+                }
+                label="Recent travel to endemic area"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={eligibilityForm.is_pregnant}
+                    onChange={(e) => handleEligibilityChange('is_pregnant', e.target.checked)}
+                    size="small"
+                  />
+                }
+                label="Currently pregnant"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={eligibilityForm.recent_medications}
+                    onChange={(e) => handleEligibilityChange('recent_medications', e.target.checked)}
+                    size="small"
+                  />
+                }
+                label="On medications"
+              />
+            </Stack>
+
+            <Stack direction="row" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={checkEligibility}
+                disabled={eligibilityLoading}
+              >
+                {eligibilityLoading ? 'Checking...' : 'Check Eligibility'}
+              </Button>
+            </Stack>
+
+            {eligibilityResult && (
+              <>
+                <Divider />
+                <Alert
+                  severity={eligibilityResult.eligible ? 'success' : 'warning'}
+                  icon={eligibilityResult.eligible ? <CheckCircleRoundedIcon /> : <ErrorRoundedIcon />}
+                >
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    {eligibilityResult.eligible
+                      ? 'You are eligible to donate blood!'
+                      : 'You are currently deferred from donating.'}
+                  </Typography>
+                </Alert>
+
+                {eligibilityResult.reasons?.length > 0 && (
+                  <Stack spacing={0.5}>
+                    <Typography variant="subtitle2">Reasons:</Typography>
+                    {eligibilityResult.reasons.map((reason, i) => (
+                      <Typography key={i} variant="body2" color="text.secondary">
+                        • {reason}
+                      </Typography>
+                    ))}
+                  </Stack>
+                )}
+
+                {eligibilityResult.next_eligible_date && (
+                  <Typography variant="body2" color="text.secondary">
+                    Next eligible date: <strong>{eligibilityResult.next_eligible_date}</strong>
+                    {eligibilityResult.cooldown_remaining_days > 0 &&
+                      ` (${eligibilityResult.cooldown_remaining_days} days remaining)`}
+                  </Typography>
+                )}
+              </>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+
+      }
+
+      {/* ─── Medical Chatbot ─── */}
       <Card>
         <CardContent>
           <Stack spacing={2}>
@@ -127,79 +327,111 @@ const AIAssistantPage = () => {
               <Typography variant="h6">Medical Chatbot</Typography>
             </Stack>
 
-            {quickQuestions.length > 0 ? (
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                {quickQuestions.map((question) => (
+            {((ROLE_PROMPTS[role] || []).concat(quickQuestions)).slice(0, 6).length > 0 && (
+              <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                {((ROLE_PROMPTS[role] || []).concat(quickQuestions)).slice(0, 6).map((question) => (
                   <Chip
                     key={question}
                     label={question}
                     variant="outlined"
+                    size="small"
                     onClick={() => askAssistant(question)}
                     clickable
+                    sx={{ borderRadius: 2 }}
                   />
                 ))}
               </Stack>
-            ) : null}
+            )}
 
-            <Box ref={chatContainerRef}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                p: 1.5,
-                minHeight: 220,
-                maxHeight: 360,
+            <Box
+              ref={chatContainerRef}
+              sx={(theme) => ({
+                bgcolor: alpha(theme.palette.background.default, 0.5),
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 3,
+                p: 2,
+                minHeight: 260,
+                maxHeight: 400,
                 overflowY: 'auto',
-              }}
+              })}
             >
-              <Stack spacing={1.25}>
+              <Stack spacing={1.5}>
                 {chatHistory.map((entry, index) => (
-                  <Box
+                  <Stack
                     key={`${entry.role}-${index}`}
+                    direction="row"
+                    spacing={1}
                     sx={{
                       alignSelf: entry.role === 'user' ? 'flex-end' : 'flex-start',
-                      maxWidth: '86%',
-                      bgcolor: entry.role === 'user' ? 'primary.main' : 'background.paper',
-                      color: entry.role === 'user' ? 'primary.contrastText' : 'text.primary',
-                      border: '1px solid',
-                      borderColor: entry.role === 'user' ? 'primary.main' : 'divider',
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 1,
+                      maxWidth: '82%',
+                      flexDirection: entry.role === 'user' ? 'row-reverse' : 'row',
                     }}
                   >
-                    <Typography variant="body2">{entry.text}</Typography>
-                    {entry.role === 'assistant' && entry.matchedQuestion ? (
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, display: 'block' }}>
-                        Matched intent: {entry.matchedQuestion}
-                        {entry.confidence ? ` | Confidence: ${Math.round(entry.confidence * 100)}%` : ''}
-                      </Typography>
-                    ) : null}
-                    {entry.role === 'assistant' && entry.suggestedQuestions?.length ? (
-                      <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
-                        {entry.suggestedQuestions.slice(0, 3).map((question) => (
-                          <Chip
-                            key={question}
-                            size="small"
-                            variant="outlined"
-                            label={question}
-                            onClick={() => askAssistant(question)}
-                            clickable
-                          />
+                    {entry.role === 'assistant' && (
+                      <Avatar sx={(t) => ({ width: 28, height: 28, bgcolor: alpha(t.palette.primary.main, 0.1), mt: 0.25 })}>
+                        <SmartToyRoundedIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                      </Avatar>
+                    )}
+                    <Box
+                      sx={(theme) => ({
+                        bgcolor: entry.role === 'user' ? 'primary.main' : theme.palette.background.paper,
+                        color: entry.role === 'user' ? '#fff' : 'text.primary',
+                        border: entry.role === 'user' ? 'none' : `1px solid ${theme.palette.divider}`,
+                        borderRadius: entry.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                        px: 1.75,
+                        py: 1,
+                        boxShadow: entry.role === 'user' ? 'none' : `0 1px 3px ${alpha('#000', 0.04)}`,
+                      })}
+                    >
+                      <Typography variant="body2" sx={{ lineHeight: 1.55 }}>{entry.text}</Typography>
+                      {entry.role === 'assistant' && entry.matchedQuestion ? (
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block', fontSize: '0.68rem' }}>
+                          Matched: {entry.matchedQuestion}
+                          {entry.confidence ? ` &middot; ${Math.round(entry.confidence * 100)}% confidence` : ''}
+                        </Typography>
+                      ) : null}
+                      {entry.role === 'assistant' && entry.suggestedQuestions?.length ? (
+                        <Stack direction="row" spacing={0.5} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                          {entry.suggestedQuestions.slice(0, 3).map((question) => (
+                            <Chip
+                              key={question}
+                              size="small"
+                              variant="outlined"
+                              label={question}
+                              onClick={() => askAssistant(question)}
+                              clickable
+                              sx={{ fontSize: '0.68rem', height: 22, borderRadius: 1.5 }}
+                            />
+                          ))}
+                        </Stack>
+                      ) : null}
+                    </Box>
+                  </Stack>
+                ))}
+                {chatLoading && (
+                  <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start' }}>
+                    <Avatar sx={(t) => ({ width: 28, height: 28, bgcolor: alpha(t.palette.primary.main, 0.1), mt: 0.25 })}>
+                      <SmartToyRoundedIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                    </Avatar>
+                    <Box sx={(t) => ({ bgcolor: t.palette.background.paper, border: `1px solid ${t.palette.divider}`, borderRadius: '16px 16px 16px 4px', px: 2, py: 1.25 })}>
+                      <Stack direction="row" spacing={0.5}>
+                        {[0, 1, 2].map((i) => (
+                          <Box key={i} sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.secondary', opacity: 0.3, animation: 'typing-dot 1.2s ease-in-out infinite', animationDelay: `${i * 0.2}s`, '@keyframes typing-dot': { '0%, 60%, 100%': { opacity: 0.3, transform: 'translateY(0)' }, '30%': { opacity: 0.8, transform: 'translateY(-4px)' } } }} />
                         ))}
                       </Stack>
-                    ) : null}
-                  </Box>
-                ))}
+                    </Box>
+                  </Stack>
+                )}
               </Stack>
             </Box>
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+            <Stack direction="row" spacing={1}>
               <TextField
-                label="Ask your question"
+                placeholder="Type your question..."
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 fullWidth
+                size="small"
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
@@ -209,78 +441,13 @@ const AIAssistantPage = () => {
               />
               <Button
                 variant="contained"
-                startIcon={<SendRoundedIcon />}
                 onClick={() => askAssistant()}
                 disabled={chatLoading}
-                sx={{ minWidth: 140 }}
+                sx={{ minWidth: 48, px: 1.5 }}
               >
-                {chatLoading ? 'Thinking...' : 'Send'}
+                <SendRoundedIcon sx={{ fontSize: 20 }} />
               </Button>
             </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent>
-          <Stack spacing={2}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <ScienceRoundedIcon color="primary" />
-              <Typography variant="h6">Blood Group Detection (Prototype)</Typography>
-            </Stack>
-
-            <TextField
-              label="Source Label (camera-upload, sample-strip, lab-image)"
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              fullWidth
-            />
-
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} alignItems={{ sm: 'center' }}>
-              <Button component="label" variant="outlined" startIcon={<UploadFileRoundedIcon />}>
-                Choose Photo
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0] || null;
-                    setDetectFile(file);
-                  }}
-                />
-              </Button>
-              <Typography variant="body2" color="text.secondary">
-                {detectFile ? `Selected: ${detectFile.name}` : 'No photo selected (optional).'}
-              </Typography>
-              {detectFile ? (
-                <Button variant="text" color="inherit" onClick={() => setDetectFile(null)}>
-                  Remove
-                </Button>
-              ) : null}
-            </Stack>
-
-            <Stack direction="row" justifyContent="flex-end">
-              <Button variant="contained" onClick={detectBloodGroup} disabled={detectLoading}>
-                {detectLoading ? 'Detecting...' : 'Run Detection'}
-              </Button>
-            </Stack>
-
-            {detectResult ? (
-              <Stack spacing={1.25}>
-                <Divider />
-                <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
-                  <Typography variant="subtitle1">Predicted Group:</Typography>
-                  <Chip color="primary" label={detectResult.blood_group || '-'} />
-                  <Chip variant="outlined" label={`Confidence: ${detectResult.confidence || 0}%`} />
-                  <Chip variant="outlined" label={`Input: ${detectResult.input_type || 'text'}`} />
-                </Stack>
-                <Typography color="text.secondary">{detectResult.summary}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Source: {detectResult.source_label || source}
-                </Typography>
-                <Alert severity="warning">{detectResult.disclaimer}</Alert>
-              </Stack>
-            ) : null}
           </Stack>
         </CardContent>
       </Card>

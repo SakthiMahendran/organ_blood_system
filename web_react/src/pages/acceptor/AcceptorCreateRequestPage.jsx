@@ -30,7 +30,7 @@ const schema = yup.object({
   }),
   units_needed: yup.number().transform(emptyToNull).nullable().when('request_type', {
     is: 'BLOOD',
-    then: (baseSchema) => baseSchema.typeError('Units should be numeric').min(1).required('Units are required'),
+    then: (baseSchema) => baseSchema.typeError('Units should be numeric').min(1).max(9999, 'Maximum 9999 units allowed').required('Units are required'),
     otherwise: (baseSchema) => baseSchema.nullable().notRequired(),
   }),
   organ_type: yup.string().nullable().when('request_type', {
@@ -154,7 +154,7 @@ const AcceptorCreateRequestPage = () => {
                       control={control}
                       label="Units Needed"
                       type="number"
-                      inputProps={{ min: 1 }}
+                      inputProps={{ min: 1, max: 9999 }}
                     />
                   </Grid2>
                 </>

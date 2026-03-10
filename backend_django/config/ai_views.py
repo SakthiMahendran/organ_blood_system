@@ -1,8 +1,4 @@
-import hashlib
-import random
-
-from rest_framework.decorators import api_view, parser_classes, permission_classes
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -109,16 +105,6 @@ def _match_chatbot_response(message: str):
     }
 
 
-def _predict_group_from_digest(digest: str, use_image: bool):
-    groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-    index = int(digest[:2], 16) % len(groups)
-    blood_group = groups[index]
-
-    random.seed(int(digest[2:10], 16))
-    confidence = round(random.uniform(82.0, 97.0), 2) if use_image else round(random.uniform(78.0, 96.0), 2)
-    return blood_group, confidence
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def chatbot_questions(request):
@@ -139,40 +125,3 @@ def chatbot_ask(request):
 
     result = _match_chatbot_response(message)
     return Response({'success': True, 'data': result})
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
-def blood_group_detect(request):
-    source = str(request.data.get('source') or 'sample').strip()
-    image = request.FILES.get('image')
-
-    use_image = bool(image)
-    if use_image:
-        sample = image.read(256 * 1024)
-        image.seek(0)
-        digest_source = sample if sample else image.name.encode('utf-8')
-        source_label = image.name
-    else:
-        digest_source = source.encode('utf-8')
-        source_label = source
-
-    digest = hashlib.md5(digest_source).hexdigest()
-    blood_group, confidence = _predict_group_from_digest(digest, use_image=use_image)
-
-    input_type = 'image' if use_image else 'text'
-
-    return Response(
-        {
-            'success': True,
-            'data': {
-                'blood_group': blood_group,
-                'confidence': confidence,
-                'input_type': input_type,
-                'source_label': source_label,
-                'summary': f'Prototype model inferred blood group from {input_type} input: {source_label}.',
-                'disclaimer': 'Prototype output only. Confirm with certified laboratory testing.',
-            },
-        }
-    )
