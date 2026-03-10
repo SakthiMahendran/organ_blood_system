@@ -1,0 +1,6 @@
+# This file controls the analyzer behavior for your Flutter app.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
