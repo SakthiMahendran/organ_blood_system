@@ -8,6 +8,7 @@ export const PATHS = {
   DONOR_PROFILE: '/donor/profile',
   DONOR_MATCHES: '/donor/matches',
   DONOR_NOTIFICATIONS: '/donor/notifications',
+  DONOR_DONATIONS: '/donor/donations',
   DONOR_AI_ASSISTANT: '/donor/ai-assistant',
 
   ACCEPTOR_DASHBOARD: '/acceptor/dashboard',
@@ -27,6 +28,7 @@ export const PATHS = {
   ADMIN_HOSPITALS: '/admin/hospitals',
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_INVENTORY: '/admin/inventory',
   ADMIN_AI_ASSISTANT: '/admin/ai-assistant',
 };
 

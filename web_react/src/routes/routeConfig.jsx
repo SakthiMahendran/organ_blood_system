@@ -12,6 +12,8 @@ import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
 import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
+import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
+import VolunteerActivismRoundedIcon from '@mui/icons-material/VolunteerActivismRounded';
 
 import { PATHS } from './paths';
 
@@ -20,6 +22,7 @@ export const ROLE_MENU = {
     { label: 'Dashboard', path: PATHS.DONOR_DASHBOARD, icon: DashboardRoundedIcon },
     { label: 'Profile', path: PATHS.DONOR_PROFILE, icon: PersonRoundedIcon },
     { label: 'Matches', path: PATHS.DONOR_MATCHES, icon: FavoriteRoundedIcon },
+    { label: 'Donations', path: PATHS.DONOR_DONATIONS, icon: VolunteerActivismRoundedIcon },
     { label: 'Notifications', path: PATHS.DONOR_NOTIFICATIONS, icon: NotificationsRoundedIcon },
     { label: 'AI Assistant', path: PATHS.DONOR_AI_ASSISTANT, icon: AutoAwesomeRoundedIcon },
   ],
@@ -43,6 +46,7 @@ export const ROLE_MENU = {
     { label: 'Hospitals', path: PATHS.ADMIN_HOSPITALS, icon: LocalHospitalRoundedIcon },
     { label: 'Audit', path: PATHS.ADMIN_AUDIT, icon: ManageAccountsRoundedIcon },
     { label: 'Analytics', path: PATHS.ADMIN_ANALYTICS, icon: BarChartRoundedIcon },
+    { label: 'Inventory', path: PATHS.ADMIN_INVENTORY, icon: InventoryRoundedIcon },
     { label: 'AI Assistant', path: PATHS.ADMIN_AI_ASSISTANT, icon: AutoAwesomeRoundedIcon },
   ],
 };

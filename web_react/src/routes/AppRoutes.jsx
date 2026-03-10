@@ -13,11 +13,13 @@ import AdminAnalyticsPage from '../pages/admin/AdminAnalyticsPage';
 import AdminAuditPage from '../pages/admin/AdminAuditPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminHospitalsPage from '../pages/admin/AdminHospitalsPage';
+import AdminInventoryPage from '../pages/admin/AdminInventoryPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
 import UnauthorizedPage from '../pages/common/UnauthorizedPage';
 import NotFoundPage from '../pages/common/NotFoundPage';
 import AIAssistantPage from '../pages/common/AIAssistantPage';
 import DonorDashboardPage from '../pages/donor/DonorDashboardPage';
+import DonorDonationsPage from '../pages/donor/DonorDonationsPage';
 import DonorMatchesPage from '../pages/donor/DonorMatchesPage';
 import DonorNotificationsPage from '../pages/donor/DonorNotificationsPage';
 import DonorProfilePage from '../pages/donor/DonorProfilePage';
@@ -61,6 +63,7 @@ const AppRoutes = () => (
         <Route path="dashboard" element={<DonorDashboardPage />} />
         <Route path="profile" element={<DonorProfilePage />} />
         <Route path="matches" element={<DonorMatchesPage />} />
+        <Route path="donations" element={<DonorDonationsPage />} />
         <Route path="notifications" element={<DonorNotificationsPage />} />
         <Route path="ai-assistant" element={<AIAssistantPage />} />
       </Route>
@@ -96,6 +99,7 @@ const AppRoutes = () => (
         <Route path="hospitals" element={<AdminHospitalsPage />} />
         <Route path="audit" element={<AdminAuditPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
+        <Route path="inventory" element={<AdminInventoryPage />} />
         <Route path="ai-assistant" element={<AIAssistantPage />} />
       </Route>
     </Route>

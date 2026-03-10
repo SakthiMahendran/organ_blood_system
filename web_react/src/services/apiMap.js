@@ -16,12 +16,15 @@ export const API_MAP = {
   requests: {
     createBlood: '/requests/blood',
     createOrgan: '/requests/organ',
+    createEmergency: '/requests/emergency',
     myRequests: '/requests/my',
     detail: (requestId) => `/requests/${requestId}`,
   },
   matching: {
     run: '/matching/run',
     candidates: '/matching/candidates',
+    results: (matchId) => `/matching/results/${matchId}`,
+    respond: (matchId) => `/matching/respond/${matchId}`,
   },
   search: {
     donors: '/search/donors',
@@ -44,6 +47,18 @@ export const API_MAP = {
     updateUser: (userId) => `/admin/users/${userId}`,
     hospitals: '/admin/hospitals',
     updateHospital: (hospitalId) => `/admin/hospitals/${hospitalId}`,
+    inventory: '/admin/inventory',
+    updateInventory: (bloodGroup) => `/admin/inventory/${bloodGroup}`,
+  },
+  donations: {
+    my: '/donations/my',
+    detail: (donationId) => `/donations/${donationId}`,
+    all: '/donations/all',
+    updateStatus: (donationId) => `/donations/${donationId}/status`,
+  },
+  recipients: {
+    profile: '/recipients/profile',
+    updateProfile: '/recipients/profile/update',
   },
   ai: {
     chatbotQuestions: '/ai/chatbot/questions',

@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "hospitals",
     "notifications_app",
     "audit_app",
+    "donations_app",
+    "recipients",
 ]
 
 MIDDLEWARE = [

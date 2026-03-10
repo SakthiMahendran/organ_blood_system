@@ -12,6 +12,8 @@ urlpatterns = [
     path('api/search/', include('matching.search_urls')),
     path('api/hospital/', include('hospitals.urls')),
     path('api/notifications/', include('notifications_app.urls')),
+    path('api/recipients/', include('recipients.urls')),
+    path('api/donations/', include('donations_app.urls')),
     path('api/admin/', include('audit_app.urls')),
     path('api/ai/chatbot/questions', ai_views.chatbot_questions, name='ai-chatbot-questions'),
     path('api/ai/chatbot/ask', ai_views.chatbot_ask, name='ai-chatbot-ask'),

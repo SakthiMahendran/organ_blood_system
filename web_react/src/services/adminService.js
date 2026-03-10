@@ -41,4 +41,14 @@ export const adminService = {
     });
     return unwrapData(response);
   },
+
+  async getInventory() {
+    const response = await apiClient.get(API_MAP.admin.inventory);
+    return unwrapData(response);
+  },
+
+  async updateInventory(bloodGroup, payload) {
+    const response = await apiClient.patch(API_MAP.admin.updateInventory(bloodGroup), payload);
+    return unwrapData(response);
+  },
 };
