@@ -88,3 +88,10 @@ package.json
 package-lock.json
 node_modules/
 .env.deploy
+
+# ========================
+# APK / Release binaries
+# ========================
+apk_app/
+*.apk
+*.aab
