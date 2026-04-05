@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BloodUnit, Donation, RedistributionSuggestion
+from .models import BloodUnit, Donation, OrganUnit, RedistributionSuggestion
 
 
 class DonationSerializer(serializers.ModelSerializer):
@@ -31,6 +31,21 @@ class BloodUnitSerializer(serializers.ModelSerializer):
             "location", "created_at", "days_until_expiry", "expiry_status",
         )
         read_only_fields = ("id", "unit_id", "expiry_date", "created_at")
+
+
+class OrganUnitSerializer(serializers.ModelSerializer):
+    hours_until_expiry = serializers.FloatField(read_only=True)
+    expiry_status = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = OrganUnit
+        fields = (
+            "id", "unit_id", "organ_type", "blood_group", "donation",
+            "collection_datetime", "expiry_datetime", "status",
+            "hospital_name", "location", "notes", "created_at",
+            "hours_until_expiry", "expiry_status",
+        )
+        read_only_fields = ("id", "unit_id", "expiry_datetime", "created_at")
 
 
 class RedistributionSuggestionSerializer(serializers.ModelSerializer):

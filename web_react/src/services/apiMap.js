@@ -68,6 +68,8 @@ export const API_MAP = {
     redistributionSuggestions: '/donations/redistribution/suggestions/',
     redistributionGenerate: '/donations/redistribution/generate/',
     redistributionUpdate: (id) => `/donations/redistribution/suggestions/${id}/`,
+    organUnits: '/donations/organ-units/',
+    organUnitSummary: '/donations/organ-units/summary/',
   },
   recipients: {
     profile: '/recipients/profile',

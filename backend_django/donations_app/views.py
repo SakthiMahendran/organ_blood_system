@@ -5,8 +5,8 @@ from rest_framework.response import Response
 
 from accounts_app.permissions import IsDonor, IsAdminUserType
 from audit_app.services import audit_log
-from .models import BloodUnit, Donation, RedistributionSuggestion
-from .serializers import BloodUnitSerializer, DonationSerializer, RedistributionSuggestionSerializer
+from .models import BloodUnit, Donation, OrganUnit, RedistributionSuggestion
+from .serializers import BloodUnitSerializer, DonationSerializer, OrganUnitSerializer, RedistributionSuggestionSerializer
 
 
 @api_view(["GET", "POST"])
@@ -215,6 +215,85 @@ def blood_unit_wastage_stats(request):
     from .inventory_services import get_wastage_stats
     data = get_wastage_stats()
     return Response({"success": True, "data": data})
+
+
+# ---------- Organ Unit Endpoints ----------
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def organ_units(request):
+    """List or register organ units. Admin/Hospital only for POST."""
+    if request.method == "GET":
+        qs = OrganUnit.objects.all().order_by("expiry_datetime")
+
+        organ_type = request.query_params.get("organ_type")
+        if organ_type:
+            qs = qs.filter(organ_type=organ_type)
+
+        unit_status = request.query_params.get("status")
+        if unit_status:
+            qs = qs.filter(status=unit_status)
+
+        hospital = request.query_params.get("hospital")
+        if hospital:
+            qs = qs.filter(hospital_name__icontains=hospital)
+
+        return Response({"success": True, "data": OrganUnitSerializer(qs[:500], many=True).data})
+
+    role = getattr(request.user, "user_type", "")
+    if role not in {"ADMIN", "HOSPITAL"}:
+        return Response(
+            {"success": False, "error": {"code": "FORBIDDEN", "message": "Only admin/hospital can register organ units"}},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    serializer = OrganUnitSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            {"success": False, "error": {"code": "VALIDATION_ERROR", "message": "Validation failed", "details": serializer.errors}},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    unit = serializer.save()
+    audit_log(
+        actor=request.user,
+        action="ORGAN_UNIT_REGISTERED",
+        entity_type="OrganUnit",
+        entity_id=unit.id,
+        metadata={"organ_type": unit.organ_type},
+    )
+    return Response({"success": True, "data": OrganUnitSerializer(unit).data}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def organ_unit_summary(request):
+    """Get organ inventory summary grouped by organ type and status."""
+    from django.utils import timezone
+    from django.db.models import Count
+    now = timezone.now()
+
+    # Mark expired units on-the-fly
+    OrganUnit.objects.filter(expiry_datetime__lt=now, status=OrganUnit.AVAILABLE).update(status=OrganUnit.EXPIRED)
+
+    summary = {}
+    for choice_val, choice_label in OrganUnit.ORGAN_CHOICES:
+        qs = OrganUnit.objects.filter(organ_type=choice_val)
+        available = qs.filter(status=OrganUnit.AVAILABLE).count()
+        critical = qs.filter(
+            status=OrganUnit.AVAILABLE,
+            expiry_datetime__lte=now + __import__('datetime').timedelta(hours=6),
+        ).count()
+        summary[choice_val] = {
+            "organ_type": choice_val,
+            "organ_label": choice_label,
+            "available": available,
+            "reserved": qs.filter(status=OrganUnit.RESERVED).count(),
+            "transplanted": qs.filter(status=OrganUnit.TRANSPLANTED).count(),
+            "expired": qs.filter(status=OrganUnit.EXPIRED).count(),
+            "critical_expiry": critical,
+        }
+
+    return Response({"success": True, "data": list(summary.values())})
 
 
 # ---------- Redistribution Endpoints ----------

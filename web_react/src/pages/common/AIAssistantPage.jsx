@@ -130,6 +130,32 @@ const AIAssistantPage = () => {
   };
 
   const checkEligibility = async () => {
+    const age = Number(eligibilityForm.age);
+    const weight = Number(eligibilityForm.weight_kg);
+
+    if (!eligibilityForm.age || !eligibilityForm.weight_kg) {
+      showToast('Please enter your age and weight before checking eligibility.', 'warning');
+      return;
+    }
+    if (age <= 0 || weight <= 0) {
+      showToast('Age and weight must be positive numbers.', 'warning');
+      return;
+    }
+
+    if (eligibilityForm.last_donation_date) {
+      const donated = new Date(eligibilityForm.last_donation_date);
+      const today = new Date();
+      const year = donated.getFullYear();
+      if (isNaN(donated.getTime()) || year < 1900 || year > today.getFullYear()) {
+        showToast('Please enter a valid last donation date.', 'warning');
+        return;
+      }
+      if (donated > today) {
+        showToast('Last donation date cannot be in the future.', 'warning');
+        return;
+      }
+    }
+
     setEligibilityLoading(true);
     setEligibilityResult(null);
     try {
@@ -182,6 +208,7 @@ const AIAssistantPage = () => {
                   onChange={(e) => handleEligibilityChange('age', e.target.value)}
                   fullWidth
                   size="small"
+                  inputProps={{ min: 1, max: 120 }}
                 />
               </Grid2>
               <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -192,6 +219,7 @@ const AIAssistantPage = () => {
                   onChange={(e) => handleEligibilityChange('weight_kg', e.target.value)}
                   fullWidth
                   size="small"
+                  inputProps={{ min: 1, max: 300 }}
                 />
               </Grid2>
               <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -203,6 +231,7 @@ const AIAssistantPage = () => {
                   fullWidth
                   size="small"
                   InputLabelProps={{ shrink: true }}
+                  inputProps={{ max: new Date().toISOString().split('T')[0], min: '1900-01-01' }}
                 />
               </Grid2>
               <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>

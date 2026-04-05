@@ -100,7 +100,13 @@ class _HospitalVerifyDonorsScreenState
                               onPressed: busy
                                   ? null
                                   : () => _update(item.id, 'REJECTED'),
-                              child: const Text('Reject'),
+                              child: busy
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2))
+                                  : const Text('Reject'),
                             ),
                           ),
                           const SizedBox(width: 10),

@@ -44,4 +44,19 @@ export const bloodUnitService = {
     const response = await apiClient.patch(API_MAP.donations.redistributionUpdate(id), { status });
     return unwrapData(response);
   },
+
+  async getOrganUnits(params = {}) {
+    const response = await apiClient.get(API_MAP.donations.organUnits, { params });
+    return unwrapData(response);
+  },
+
+  async createOrganUnit(data) {
+    const response = await apiClient.post(API_MAP.donations.organUnits, data);
+    return unwrapData(response);
+  },
+
+  async getOrganUnitSummary() {
+    const response = await apiClient.get(API_MAP.donations.organUnitSummary);
+    return unwrapData(response);
+  },
 };

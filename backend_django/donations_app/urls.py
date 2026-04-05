@@ -12,6 +12,9 @@ urlpatterns = [
     path("blood-units/expiry-alerts/", views.blood_unit_expiry_alerts, name="blood-unit-expiry-alerts"),
     path("blood-units/fifo-suggestion/", views.blood_unit_fifo_suggestion, name="blood-unit-fifo"),
     path("blood-units/wastage-stats/", views.blood_unit_wastage_stats, name="blood-unit-wastage"),
+    # Organ Unit endpoints
+    path("organ-units/", views.organ_units, name="organ-units"),
+    path("organ-units/summary/", views.organ_unit_summary, name="organ-unit-summary"),
     # Redistribution endpoints
     path("redistribution/suggestions/", views.redistribution_suggestions, name="redistribution-suggestions"),
     path("redistribution/generate/", views.generate_redistribution, name="redistribution-generate"),

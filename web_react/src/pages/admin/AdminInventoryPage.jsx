@@ -1,8 +1,10 @@
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import DeleteSweepRoundedIcon from '@mui/icons-material/DeleteSweepRounded';
 import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
+import VolunteerActivismRoundedIcon from '@mui/icons-material/VolunteerActivismRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -13,11 +15,13 @@ import {
   DialogTitle,
   MenuItem,
   Stack,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material';
@@ -39,16 +43,34 @@ const COMPONENT_TYPES = [
   { value: 'platelets', label: 'Platelets (5 days)' },
   { value: 'ffp', label: 'Fresh Frozen Plasma (1 year)' },
 ];
+const ORGAN_TYPES = [
+  { value: 'heart', label: 'Heart (4h viability)' },
+  { value: 'lungs', label: 'Lungs (6h viability)' },
+  { value: 'small_intestine', label: 'Small Intestine (8h)' },
+  { value: 'pancreas', label: 'Pancreas (12h viability)' },
+  { value: 'liver', label: 'Liver (24h viability)' },
+  { value: 'bone_marrow', label: 'Bone Marrow (24h)' },
+  { value: 'kidney', label: 'Kidney (36h viability)' },
+  { value: 'corneas', label: 'Corneas (7 days)' },
+];
 
 const EXPIRY_COLORS = { RED: 'error', AMBER: 'warning', GREEN: 'success', EXPIRED: 'error' };
+const ORGAN_STATUS_COLORS = { CRITICAL: 'error', WARNING: 'warning', OK: 'success', EXPIRED: 'default' };
 
 const AdminInventoryPage = () => {
   const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Blood inventory state
   const [inventory, setInventory] = useState([]);
   const [expiryAlerts, setExpiryAlerts] = useState(null);
   const [wastageStats, setWastageStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Organ inventory state
+  const [organSummary, setOrganSummary] = useState([]);
+  const [organLoading, setOrganLoading] = useState(true);
 
   // Edit dialog state
   const [editItem, setEditItem] = useState(null);
@@ -65,6 +87,17 @@ const AdminInventoryPage = () => {
     hospital_name: '',
   });
   const [registering, setRegistering] = useState(false);
+
+  // Register organ unit dialog
+  const [organRegisterOpen, setOrganRegisterOpen] = useState(false);
+  const [organRegisterForm, setOrganRegisterForm] = useState({
+    organ_type: 'kidney',
+    blood_group: '',
+    collection_datetime: new Date().toISOString().slice(0, 16),
+    hospital_name: '',
+    notes: '',
+  });
+  const [organRegistering, setOrganRegistering] = useState(false);
 
   const loadAll = async () => {
     setIsLoading(true);
@@ -85,8 +118,21 @@ const AdminInventoryPage = () => {
     }
   };
 
+  const loadOrganSummary = async () => {
+    setOrganLoading(true);
+    try {
+      const data = await bloodUnitService.getOrganUnitSummary();
+      setOrganSummary(Array.isArray(data) ? data : []);
+    } catch {
+      setOrganSummary([]);
+    } finally {
+      setOrganLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadAll();
+    loadOrganSummary();
   }, []);
 
   const handleEdit = (item) => {
@@ -134,6 +180,31 @@ const AdminInventoryPage = () => {
     }
   };
 
+  const handleOrganRegister = async () => {
+    if (!organRegisterForm.hospital_name.trim()) {
+      showToast('Hospital name is required.', 'warning');
+      return;
+    }
+    setOrganRegistering(true);
+    try {
+      await bloodUnitService.createOrganUnit(organRegisterForm);
+      showToast('Organ unit registered successfully.', 'success');
+      setOrganRegisterOpen(false);
+      setOrganRegisterForm({
+        organ_type: 'kidney',
+        blood_group: '',
+        collection_datetime: new Date().toISOString().slice(0, 16),
+        hospital_name: '',
+        notes: '',
+      });
+      loadOrganSummary();
+    } catch (apiError) {
+      showToast(getErrorMessage(apiError, 'Failed to register organ unit.'), 'error');
+    } finally {
+      setOrganRegistering(false);
+    }
+  };
+
   if (error && inventory.length === 0) {
     return <ErrorState message={error} onRetry={loadAll} />;
   }
@@ -141,18 +212,23 @@ const AdminInventoryPage = () => {
   return (
     <Stack spacing={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4">Blood Inventory</Typography>
+        <Typography variant="h4">Inventory</Typography>
         <Button
           variant="contained"
           startIcon={<AddCircleRoundedIcon />}
-          onClick={() => setRegisterOpen(true)}
+          onClick={() => activeTab === 0 ? setRegisterOpen(true) : setOrganRegisterOpen(true)}
         >
-          Register Blood Unit
+          {activeTab === 0 ? 'Register Blood Unit' : 'Register Organ Unit'}
         </Button>
       </Stack>
 
-      {/* ─── Expiry Alerts Summary ─── */}
-      <Grid2 container spacing={2}>
+      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+        <Tab label="Blood Inventory" />
+        <Tab label="Organ Inventory" />
+      </Tabs>
+
+      {/* ─── Blood Inventory Tab ─── */}
+      {activeTab === 0 && <><Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, sm: 4 }}>
           <StatCard
             title="Expiring < 3 Days"
@@ -292,6 +368,84 @@ const AdminInventoryPage = () => {
         </CardContent>
       </Card>
 
+      </>}
+
+      {/* ─── Organ Inventory Tab ─── */}
+      {activeTab === 1 && (
+        <Stack spacing={3}>
+          {organLoading ? (
+            <ListSkeleton rows={8} />
+          ) : organSummary.length === 0 ? (
+            <Card><CardContent><Typography color="text.secondary" align="center">No organ units registered yet.</Typography></CardContent></Card>
+          ) : (
+            <>
+              <Grid2 container spacing={2}>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <StatCard
+                    title="Total Available"
+                    value={organSummary.reduce((s, o) => s + o.available, 0)}
+                    icon={VolunteerActivismRoundedIcon}
+                    color="success"
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <StatCard
+                    title="Critical Expiry (< 6h)"
+                    value={organSummary.reduce((s, o) => s + o.critical_expiry, 0)}
+                    icon={WarningAmberRoundedIcon}
+                    color="error"
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <StatCard
+                    title="Transplanted"
+                    value={organSummary.reduce((s, o) => s + o.transplanted, 0)}
+                    icon={InventoryRoundedIcon}
+                    color="primary"
+                  />
+                </Grid2>
+              </Grid2>
+
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1.5 }}>Organ Inventory by Type</Typography>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Organ Type</TableCell>
+                        <TableCell align="right">Available</TableCell>
+                        <TableCell align="right">Reserved</TableCell>
+                        <TableCell align="right">Transplanted</TableCell>
+                        <TableCell align="right">Expired</TableCell>
+                        <TableCell align="center">Critical (&lt; 6h)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {organSummary.map((row) => (
+                        <TableRow key={row.organ_type}>
+                          <TableCell><Typography fontWeight={600} sx={{ textTransform: 'capitalize' }}>{row.organ_label}</Typography></TableCell>
+                          <TableCell align="right">{row.available}</TableCell>
+                          <TableCell align="right">{row.reserved}</TableCell>
+                          <TableCell align="right">{row.transplanted}</TableCell>
+                          <TableCell align="right">{row.expired}</TableCell>
+                          <TableCell align="center">
+                            {row.critical_expiry > 0 ? (
+                              <Chip label={row.critical_expiry} color="error" size="small" />
+                            ) : (
+                              <Chip label="0" color="success" size="small" variant="outlined" />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </Stack>
+      )}
+
       {/* Edit Inventory Dialog */}
       <Dialog open={!!editItem} onClose={() => setEditItem(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Update {editItem?.blood_group} Inventory</DialogTitle>
@@ -368,6 +522,66 @@ const AdminInventoryPage = () => {
           <Button onClick={() => setRegisterOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleRegister} disabled={registering}>
             {registering ? 'Registering...' : 'Register'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Register Organ Unit Dialog */}
+      <Dialog open={organRegisterOpen} onClose={() => setOrganRegisterOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Register New Organ Unit</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select
+              label="Organ Type"
+              value={organRegisterForm.organ_type}
+              onChange={(e) => setOrganRegisterForm((prev) => ({ ...prev, organ_type: e.target.value }))}
+              fullWidth
+            >
+              {ORGAN_TYPES.map((ot) => (
+                <MenuItem key={ot.value} value={ot.value}>{ot.label}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Blood Group (optional)"
+              value={organRegisterForm.blood_group}
+              onChange={(e) => setOrganRegisterForm((prev) => ({ ...prev, blood_group: e.target.value }))}
+              fullWidth
+            >
+              <MenuItem value="">— None —</MenuItem>
+              {BLOOD_GROUPS.map((g) => (
+                <MenuItem key={g} value={g}>{g}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Collection Date & Time"
+              type="datetime-local"
+              value={organRegisterForm.collection_datetime}
+              onChange={(e) => setOrganRegisterForm((prev) => ({ ...prev, collection_datetime: e.target.value }))}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ max: new Date().toISOString().slice(0, 16) }}
+            />
+            <TextField
+              label="Hospital Name"
+              value={organRegisterForm.hospital_name}
+              onChange={(e) => setOrganRegisterForm((prev) => ({ ...prev, hospital_name: e.target.value }))}
+              fullWidth
+            />
+            <TextField
+              label="Notes (optional)"
+              value={organRegisterForm.notes}
+              onChange={(e) => setOrganRegisterForm((prev) => ({ ...prev, notes: e.target.value }))}
+              fullWidth
+              multiline
+              rows={2}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOrganRegisterOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleOrganRegister} disabled={organRegistering}>
+            {organRegistering ? 'Registering...' : 'Register'}
           </Button>
         </DialogActions>
       </Dialog>

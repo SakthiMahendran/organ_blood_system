@@ -24,6 +24,7 @@ class AppTheme {
       primary: primary,
       secondary: secondary,
       surface: surface,
+      onSurface: onSurface,
       brightness: brightness,
     );
 

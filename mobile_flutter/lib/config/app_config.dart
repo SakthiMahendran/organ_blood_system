@@ -10,10 +10,18 @@ class AppConfig {
   static const String _productionApiUrl =
       'https://mrtechie-organ-blood-backend.hf.space/api';
 
+  // Android emulator reaches host machine via 10.0.2.2; physical device needs
+  // the host machine's LAN IP (e.g. 192.168.1.x).
+  static const String _localApiUrl = 'http://10.0.2.2:8000/api';
+
   static String get apiBaseUrl {
     final configured = _normalizeBaseUrl(_apiBaseUrlFromEnv);
     if (configured.isNotEmpty) {
       return configured;
+    }
+
+    if (kDebugMode) {
+      return _localApiUrl;
     }
 
     return _productionApiUrl;

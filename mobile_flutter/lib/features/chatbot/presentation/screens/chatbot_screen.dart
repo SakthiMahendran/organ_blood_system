@@ -236,15 +236,20 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
                   if (_loadingQuestions)
                     const LinearProgressIndicator(minHeight: 3)
                   else if (_quickQuestions.isNotEmpty)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _quickQuestions.map((item) {
-                        return ActionChip(
-                          label: Text(item),
-                          onPressed: _sending ? null : () => _send(item),
-                        );
-                      }).toList(growable: false),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 160),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _quickQuestions.map((item) {
+                            return ActionChip(
+                              label: Text(item),
+                              onPressed: _sending ? null : () => _send(item),
+                            );
+                          }).toList(growable: false),
+                        ),
+                      ),
                     )
                   else
                     Text(

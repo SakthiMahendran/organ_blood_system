@@ -6,18 +6,19 @@ class StatusChip extends StatelessWidget {
   final String label;
 
   Color _chipColor(String upper) {
-    if (upper.contains('FULFILLED') ||
-        upper.contains('APPROVED') ||
-        upper.contains('VERIFIED') ||
-        upper.contains('ACTIVE')) {
-      return const Color(0xFF1B8F4C);
-    }
+    // Check INACTIVE before ACTIVE — 'INACTIVE' contains 'ACTIVE' as a substring.
     if (upper.contains('REJECTED') ||
         upper.contains('DECLINED') ||
         upper.contains('CANCELLED') ||
         upper.contains('SUSPENDED') ||
         upper.contains('INACTIVE')) {
       return const Color(0xFFC7332F);
+    }
+    if (upper.contains('FULFILLED') ||
+        upper.contains('APPROVED') ||
+        upper.contains('VERIFIED') ||
+        upper.contains('ACTIVE')) {
+      return const Color(0xFF1B8F4C);
     }
     if (upper.contains('PENDING') || upper.contains('MATCHING')) {
       return const Color(0xFFD98100);

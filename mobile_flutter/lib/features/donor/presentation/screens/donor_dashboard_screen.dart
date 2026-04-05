@@ -90,41 +90,44 @@ class _DonorDashboardScreenState extends ConsumerState<DonorDashboardScreen> {
                 );
               }
 
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Verification: ${profile.verificationStatus}',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 10),
-                      Text(
-                          'Last updated: ${AppFormatters.dateTime(profile.updatedAt)}'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: Text(
-                                  'Availability: ${profile.availabilityStatus}')),
-                          FilledButton.tonalIcon(
-                            onPressed: _availabilitySaving
-                                ? null
-                                : () => _toggleAvailability(
-                                    profile.availabilityStatus),
-                            icon: _availabilitySaving
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.swap_horiz),
-                            label: const Text('Toggle'),
-                          ),
-                        ],
-                      ),
-                    ],
+              return SizedBox(
+                width: double.infinity,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Verification: ${profile.verificationStatus}',
+                            style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 10),
+                        Text(
+                            'Last updated: ${AppFormatters.dateTime(profile.updatedAt)}'),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text(
+                                    'Availability: ${profile.availabilityStatus}')),
+                            FilledButton.tonalIcon(
+                              onPressed: _availabilitySaving
+                                  ? null
+                                  : () => _toggleAvailability(
+                                      profile.availabilityStatus),
+                              icon: _availabilitySaving
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.swap_horiz),
+                              label: const Text('Toggle'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
