@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from accounts_app.models import User
 
-        if User.objects.filter(email="admin@demo.com").exists():
+        if User.objects.filter(username="admin").exists():
             self.stdout.write("Demo data already present — skipping.")
             return
 
